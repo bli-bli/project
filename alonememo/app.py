@@ -13,29 +13,35 @@ def home():
 @app.route('/memo', methods=['POST'])
 def post_article():
     # 1. 클라이언트로부터 데이터를 받기
-        url = request.form["url"]
-        comment = request.form['comment']
+    url_recieve = request.form["url_give"]
+    comment_recieve = request.form["comment_give"]
 
     # 2. meta tag를 스크래핑하기
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.86 Safari/537.36'}
-        data = requests.get(url, headers=headers)
-        soup = BeautifulSoup(data.text, 'html.parser')
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.86 Safari/537.36'}
+    data = requests.get(url_recieve, headers=headers)
 
-        title = soup.select_one('meta[property="og:title"]')["content"]
-        image = soup.select_one('meta[property="og:image"]')["content"]
-        desc = soup.select_one('meta[property="og:description"]')["content"]
-
-        db.articles.insert_one({'url': url, 'comment': comment, 'title': title, 'image': image, 'desc': desc})
-        # 3. mongoDB에 데이터 넣기
-        return jsonify({'result': 'success', 'msg': 'POST 연결되었습니다!'})
+    soup = BeautifulSoup(data.text, 'html.parser')
+    title = soup.select_one('meta[property="og:title"]')["content"]
+    image = soup.select_one('meta[property="og:image"]')["content"]
+    desc = soup.select_one('meta[property="og:description"]')["content"]
+    # 3. mongoDB에 데이터 넣기
+    doc = {
+        'title': title,
+        'image': image,
+        'desc': desc,
+        'url': url_recieve,
+        'comment': comment_recieve
+    }
+    db.articles.insert_one(doc)
+    return jsonify({'result': 'success', 'msg': '저장이 성공적으로 완료되었습니다 :>'})
 
 @app.route('/memo', methods=['GET'])
 def read_articles():
     # 1. mongoDB에서 _id 값을 제외한 모든 데이터 조회해오기(Read)
     articles = list(db.articles.find({}, {'_id': False}))
     # 2. articles라는 키 값으로 articles 정보 보내주기
+    return jsonify({'result': 'success', 'articles': articles})
 
-    return jsonify({'result': 'success', 'msg': 'GET 연결되었습니다!', 'articles': articles})
 if __name__ == '__main__':
     app.run('0.0.0.0', port=5000, debug=True)

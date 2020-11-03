@@ -24,31 +24,30 @@
         <link href="https://fonts.googleapis.com/css?family=Do+Hyeon&display=swap" rel="stylesheet">
 
         <script type="text/javascript">
-            //리뷰작성하는 칸을 비우고 리뷰 목록을 제일 먼저 보여준다
+
             $(function () {
                 $("#reviews-box").html("");
                 showReview();
             });
-            //리뷰 작성하기 버튼
+
             function makeReview() {
                 // 1. 제목, 저자, 리뷰 내용을 가져옵니다.
-                // 2. 제목, 저자, 리뷰 중 하나라도 입력하지 않았을 경우 alert를 띄웁니다.
                 let title = $('#title').val();
                 let author = $('#author').val();
                 let bookReview = $('#bookReview').val();
+                // 2. 제목, 저자, 리뷰 중 하나라도 입력하지 않았을 경우 alert를 띄웁니다.
                 if(title == "" || author == "" || bookReview == ""){
-                    alert("모두 입력해주세요 :)");
+                    alert('항목을 빠짐없이 기입해주세요');
                     return;
                 }
-
-                 // 3. POST /review 에 저장을 요청합니다.
+                // 3. POST /review 에 저장을 요청합니다.
                 $.ajax({
                     type: "POST",
                     url: "/review",
                     data: {
-                        'title': title,
-                        'author': author,
-                        'bookReview': bookReview
+                        'title' : title,
+                        'author' : author,
+                        'bookReview' : bookReview
                     },
                     success: function (response) {
                         if (response["result"] == "success") {
@@ -61,9 +60,7 @@
 
             function showReview() {
                 // 1. 리뷰 목록을 서버에 요청하기
-
                 // 2. 요청 성공 여부 확인하기
-
                 // 3. 요청 성공했을 때 리뷰를 올바르게 화면에 나타내기
                 $.ajax({
                     type: "GET",
@@ -71,23 +68,25 @@
                     data: {},
                     success: function (response) {
                         if (response["result"] == "success") {
-                            //화면에 review 나타내기
-                            let reviews = response['reviews'];
-                            for(let i = 0; i < reviews.length; i++){
-                               let review = reviews[i];
-                               let title = review['title'];
-                               let author = review['author'];
-                               let bookReview = review['bookReview'];
-                               let tempHtml = ` <tr>
-                                                    <td>${title}</td>
-                                                    <td>${author}</td>
-                                                    <td>${bookReview}</td>
-                                                </tr>`;
-                                $('#reviews-box').append(tempHtml);
+                            let reviews = response['all_reviews']
+                            for(let i =  0; i < reviews.length; i++){
+                                let title = reviews[i]['title'];
+                                let author = reviews[i]['author'];
+                                let bookReview = reviews[i]['bookReview'];
 
+                                let tempHtml = `
+                                    <tr>
+                                        <td>${title}</td>
+                                        <td>${author}</td>
+                                        <td>${bookReview}</td>
+                                    </tr>
+                                `;
+
+                                $('#reviews-box').append(tempHtml);
                             }
+
                         } else {
-                            alert("리뷰 정보를 불러오는데 실패하였습니다");
+                            alert("리뷰를 받아오지 못했습니다");
                         }
                     }
                 })
@@ -168,7 +167,11 @@
                     </tr>
                     </thead>
                     <tbody id="reviews-box">
-
+                    <tr>
+                        <td>왕초보 8주 코딩</td>
+                        <td>김르탄</td>
+                        <td>역시 왕초보 코딩교육의 명가답군요. 따라하다보니 눈 깜짝할 사이에 8주가 지났습니다.</td>
+                    </tr>
                     </tbody>
                 </table>
             </div>
